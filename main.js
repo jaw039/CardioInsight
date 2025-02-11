@@ -117,6 +117,26 @@ function createHistogram() {
                 .attr("height", d => y(0) - y(d.length));
         }
     }
-
     updateChart();
+
+
+d3.select("#maleButton").on("click", function () {
+    toggleFilter("male", this);
+});
+
+d3.select("#femaleButton").on("click", function () {
+    toggleFilter("female", this);
+});
+
+function toggleFilter(gender, button) {
+    if (selectedGenders.has(gender)) {
+        selectedGenders.delete(gender);
+        button.classList.remove("active");
+    } else {
+        selectedGenders.add(gender);
+        button.classList.add("active");
+    }
+    updateChart();
+
+    }
 }
