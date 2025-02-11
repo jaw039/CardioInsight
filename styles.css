@@ -1,0 +1,36 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+#buttons {
+    margin: 20px;
+}
+
+.filter-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    background-color: #ccc;
+    border-radius: 5px;
+}
+
+.filter-button.active {
+    background-color: #007bff;
+    color: white;
+}
+
+svg {
+    display: block;
+    margin: auto;
+}
+
+.bar-male {
+    fill: steelblue;
+}
+
+.bar-female {
+    fill: lightcoral;
+}
