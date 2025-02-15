@@ -34,3 +34,38 @@ svg {
 .bar-female {
     fill: lightcoral;
 }
+
+.tooltip {
+    position: absolute;
+    padding: 8px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .bar-male, .bar-female {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  
+  .bar-male:hover, .bar-female:hover {
+    opacity: 1;
+  }
+  
+  .brush .selection {
+    fill: #69b3a2;
+    fill-opacity: 0.2;
+    stroke: #4a8c74;
+  }
+  
+  .legend {
+    font-size: 12px;
+  }
+  
+  .grid line {
+    stroke: #ddd;
+    stroke-opacity: 0.7;
+  }
