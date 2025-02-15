@@ -40,13 +40,28 @@ function createHistogram() {
 
     const width = 960, height = 500, margin = { top: 20, right: 20, bottom: 60, left: 60 };
     
+    // Create tooltip div if it doesn't exist
+    let tooltip = d3.select("body").select(".tooltip");
+    if (tooltip.empty()) {
+        tooltip = d3.select("body")
+            .append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0)
+            .style("position", "absolute")
+            .style("background-color", "white")
+            .style("border", "1px solid #ddd")
+            .style("border-radius", "3px")
+            .style("padding", "8px")
+            .style("pointer-events", "none");
+    }
+
     const svg = d3.select("#chart")
         .append("svg")
         .attr("width", width)
         .attr("height", height);
 
     const x = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.VO2)) // Ensure full range
+        .domain(d3.extent(data, d => d.VO2))
         .nice()
         .range([margin.left, width - margin.right]);
 
@@ -59,7 +74,7 @@ function createHistogram() {
     const binsFemale = histogram(data.filter(d => d.gender === "female"));
 
     const y = d3.scaleLinear()
-        .domain([0, d3.max([...binsMale, ...binsFemale], d => d.length) || 1]) // Prevent empty range
+        .domain([0, d3.max([...binsMale, ...binsFemale], d => d.length) || 1])
         .nice()
         .range([height - margin.bottom, margin.top]);
 
@@ -69,7 +84,7 @@ function createHistogram() {
         .call(d3.axisBottom(x))
         .append("text")
         .attr("x", width / 2)
-        .attr("y", 40) // Increased margin for better visibility
+        .attr("y", 40)
         .attr("fill", "#000")
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
@@ -83,7 +98,7 @@ function createHistogram() {
         .append("text")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
-        .attr("y", -45) // Increased padding to prevent overlap
+        .attr("y", -45)
         .attr("fill", "#000")
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
@@ -102,7 +117,24 @@ function createHistogram() {
                 .attr("x", d => x(d.x0) + 1)
                 .attr("width", d => x(d.x1) - x(d.x0) - 1)
                 .attr("y", d => y(d.length))
-                .attr("height", d => y(0) - y(d.length));
+                .attr("height", d => y(0) - y(d.length))
+                .on("mouseover", function(event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", 0.9);
+                    tooltip.html(`
+                        <strong>Male</strong><br/>
+                        Range: ${d.x0.toFixed(1)} - ${d.x1.toFixed(1)}<br/>
+                        Count: ${d.length}
+                    `)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
         }
 
         if (selectedGenders.has("female")) {
@@ -114,29 +146,45 @@ function createHistogram() {
                 .attr("x", d => x(d.x0) + 1)
                 .attr("width", d => x(d.x1) - x(d.x0) - 1)
                 .attr("y", d => y(d.length))
-                .attr("height", d => y(0) - y(d.length));
+                .attr("height", d => y(0) - y(d.length))
+                .on("mouseover", function(event, d) {
+                    tooltip.transition()
+                        .duration(200)
+                        .style("opacity", 0.9);
+                    tooltip.html(`
+                        <strong>Female</strong><br/>
+                        Range: ${d.x0.toFixed(1)} - ${d.x1.toFixed(1)}<br/>
+                        Count: ${d.length}
+                    `)
+                    .style("left", (event.pageX + 10) + "px")
+                    .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function() {
+                    tooltip.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
         }
     }
     updateChart();
 
+    // Button event handlers
+    d3.select("#maleButton").on("click", function() {
+        toggleFilter("male", this);
+    });
 
-d3.select("#maleButton").on("click", function () {
-    toggleFilter("male", this);
-});
+    d3.select("#femaleButton").on("click", function() {
+        toggleFilter("female", this);
+    });
 
-d3.select("#femaleButton").on("click", function () {
-    toggleFilter("female", this);
-});
-
-function toggleFilter(gender, button) {
-    if (selectedGenders.has(gender)) {
-        selectedGenders.delete(gender);
-        button.classList.remove("active");
-    } else {
-        selectedGenders.add(gender);
-        button.classList.add("active");
-    }
-    updateChart();
-
+    function toggleFilter(gender, button) {
+        if (selectedGenders.has(gender)) {
+            selectedGenders.delete(gender);
+            button.classList.remove("active");
+        } else {
+            selectedGenders.add(gender);
+            button.classList.add("active");
+        }
+        updateChart();
     }
 }
