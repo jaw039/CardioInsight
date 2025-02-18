@@ -1,6 +1,6 @@
 let data = [];
 let selectedGenders = new Set(["male", "female"]);
-let genderLookup = {}; // Store gender info by ID
+let genderLookup = {}; 
 
 // Load subject-info.csv first
 d3.csv("subject-info.csv").then((subjectData) => {
@@ -25,14 +25,13 @@ d3.csv("subject-info.csv").then((subjectData) => {
         let VO2Value = +d.VO2;
         let gender = genderLookup[trimmedID];
         
-        // Convert VO2 to correct range by dividing by 100
         VO2Value = VO2Value / 100;
                 
         return {
             VO2: VO2Value,
             gender: gender || "unknown" 
         };
-    }).filter(d => d.VO2 >= 0 && d.VO2 <= 80); // Filter to physiological range
+    }).filter(d => d.VO2 >= 0 && d.VO2 <= 80); 
 
     createHistogram();
 }).catch(error => console.error("Error loading CSV:", error));
@@ -64,7 +63,7 @@ function createHistogram() {
         .attr("height", height);
 
     const x = d3.scaleLinear()
-        .domain([0, 80])  // Set fixed domain for physiological VO2 values
+        .domain([0, 60])  
         .range([margin.left, width - margin.right]);
 
     const histogram = d3.bin()
@@ -105,7 +104,7 @@ function createHistogram() {
         .attr("text-anchor", "middle")
         .style("font-size", "16px")
         .style("font-weight", "bold")
-        .text("Frequency");
+        .text("Frequency/Count");
 
     function updateChart() {
         svg.selectAll(".bar").remove();
