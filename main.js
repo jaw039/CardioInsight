@@ -24,12 +24,15 @@ d3.csv("subject-info.csv").then((subjectData) => {
         let trimmedID = String(d.ID).trim(); 
         let VO2Value = +d.VO2;
         let gender = genderLookup[trimmedID];
+        
+        // Convert VO2 to correct range by dividing by 100
+        VO2Value = VO2Value / 100;
                 
         return {
             VO2: VO2Value,
             gender: gender || "unknown" 
         };
-    });
+    }).filter(d => d.VO2 >= 0 && d.VO2 <= 80); // Filter to physiological range
 
     createHistogram();
 }).catch(error => console.error("Error loading CSV:", error));
@@ -61,8 +64,7 @@ function createHistogram() {
         .attr("height", height);
 
     const x = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.VO2))
-        .nice()
+        .domain([0, 80])  // Set fixed domain for physiological VO2 values
         .range([margin.left, width - margin.right]);
 
     const histogram = d3.bin()
