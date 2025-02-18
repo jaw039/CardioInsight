@@ -6,16 +6,51 @@
     <title>Oxygen Consumption Histogram</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="./main.js"></script>
 </head>
 <body>
     <h1>How Does Sex Affect Oxygen Consumption?</h1>
     
+    <div id="slider-container">
+        <div id="filters">
+            <div class="filter-group">
+                <p class="filter-label">Age Range</p>
+                <div id="value-age-min-display" class="range-display"></div>
+                <div class="slider-wrapper">
+                    <input type="range" id="age-min" class="slider">
+                    <span>to</span>
+                    <input type="range" id="age-max" class="slider">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <p class="filter-label">Weight Range</p>
+                <div id="value-weight-min-display" class="range-display"></div>
+                <div class="slider-wrapper">
+                    <input type="range" id="weight-min" class="slider">
+                    <span>to</span>
+                    <input type="range" id="weight-max" class="slider">
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <p class="filter-label">Temperature Range</p>
+                <div id="value-temp-min-display" class="range-display"></div>
+                <div class="slider-wrapper">
+                    <input type="range" id="temp-min" class="slider">
+                    <span>to</span>
+                    <input type="range" id="temp-max" class="slider">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="buttons">
         <button id="maleButton" class="filter-button">Male</button>
         <button id="femaleButton" class="filter-button">Female</button>
+        <button id="bothButton" class="filter-button">Both</button>
     </div>
     
     <div id="chart"></div>
+    <script src="./main.js"></script>
 </body>
 </html>

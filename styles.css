@@ -22,6 +22,12 @@ body {
     color: white;
 }
 
+/* Add styles for the both button */
+#bothButton.active {
+    background-color: #28a745;
+    color: white;
+}
+
 svg {
     display: block;
     margin: auto;
@@ -29,10 +35,12 @@ svg {
 
 .bar-male {
     fill: steelblue;
+    opacity: 0.6;
 }
 
 .bar-female {
     fill: lightcoral;
+    opacity: 0.6;
 }
 
 .tooltip {
@@ -44,28 +52,141 @@ svg {
     border-radius: 4px;
     pointer-events: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
-  .bar-male, .bar-female {
+}
+
+.bar-male, .bar-female {
     opacity: 0.7;
     transition: opacity 0.2s;
-  }
-  
-  .bar-male:hover, .bar-female:hover {
+}
+
+.bar-male:hover, .bar-female:hover {
     opacity: 1;
-  }
-  
-  .brush .selection {
+}
+
+/* Add styles for when both genders are shown */
+.bar-both-male {
+    fill: steelblue;
+    opacity: 0.7;
+}
+
+.bar-both-female {
+    fill: lightcoral;
+    opacity: 0.7;
+}
+
+/* Add styles for when bars are shown together */
+.bar-male.both, .bar-female.both {
+    opacity: 0.7;
+}
+
+.brush .selection {
     fill: #69b3a2;
     fill-opacity: 0.2;
     stroke: #4a8c74;
-  }
-  
-  .legend {
+}
+
+.legend {
     font-size: 12px;
-  }
-  
-  .grid line {
+}
+
+.grid line {
     stroke: #ddd;
     stroke-opacity: 0.7;
-  }
+}
+
+#slider-container {
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    margin: 20px auto;
+    width: 80%;
+}
+
+.filter-label {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    width: 200px;
+    background: #ddd;
+    border-radius: 4px;
+    outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #007bff;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+#age-display {
+    font-size: 14px;
+    color: #666;
+    margin: 10px 0;
+}
+
+/* Add these new styles to your existing CSS file */
+#filters {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.filter-group {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.range-display {
+    font-size: 14px;
+    color: #666;
+    margin: 5px 0 10px;
+}
+
+.filter-label {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.slider-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+}
+
+/* Add hover effect to sliders */
+.slider:hover::-webkit-slider-thumb {
+    background: #0056b3;
+}
+
+.slider:hover::-moz-range-thumb {
+    background: #0056b3;
+}

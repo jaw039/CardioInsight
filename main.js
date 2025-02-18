@@ -1,20 +1,37 @@
 let data = [];
 let selectedGenders = new Set(["male", "female"]);
 let genderLookup = {};
+let ageLookup = {};
+let weightLookup = {};
+let temperatureLookup = {};
 
-// Load subject-info.csv first
+// Modify your existing data loading code
 d3.csv("subject-info.csv")
   .then((subjectData) => {
-    subjectData.forEach((d) => {
-      if (d.ID !== undefined && d.ID !== null) {
-        let trimmedID = String(d.ID).trim();
-        let trimmedSex = String(d.Sex).trim();
+    // Get ranges for all filters
+    const ages = subjectData.map(d => +d.Age).filter(age => !isNaN(age));
+    const weights = subjectData.map(d => +d.Weight).filter(w => !isNaN(w));
+    const temperatures = subjectData.map(d => +d.Temperature).filter(t => !isNaN(t));
 
-        if (trimmedSex === "1") {
+    // Set up all sliders
+    setupSlider("#age-min", "#age-max", Math.floor(d3.min(ages)), Math.ceil(d3.max(ages)), "years");
+    setupSlider("#weight-min", "#weight-max", Math.floor(d3.min(weights)), Math.ceil(d3.max(weights)), "kg");
+    setupSlider("#temp-min", "#temp-max", Math.floor(d3.min(temperatures)), Math.ceil(d3.max(temperatures)), "°C");
+
+    // Store all metadata
+    subjectData.forEach((d) => {
+      if (d.ID) {
+        let trimmedID = String(d.ID).trim();
+        
+        if (d.Sex === "1") {
           genderLookup[trimmedID] = "female";
-        } else if (trimmedSex === "0") {
+        } else if (d.Sex === "0") {
           genderLookup[trimmedID] = "male";
         }
+        
+        ageLookup[trimmedID] = +d.Age;
+        weightLookup[trimmedID] = +d.Weight;
+        temperatureLookup[trimmedID] = +d.Temperature;
       }
     });
 
@@ -25,13 +42,13 @@ d3.csv("subject-info.csv")
       .map((d) => {
         let trimmedID = String(d.ID).trim();
         let VO2Value = +d.VO2;
-        let gender = genderLookup[trimmedID];
-
-        VO2Value = VO2Value / 100;
-
+        
         return {
-          VO2: VO2Value,
-          gender: gender || "unknown",
+          VO2: VO2Value / 100,
+          gender: genderLookup[trimmedID] || "unknown",
+          age: ageLookup[trimmedID],
+          weight: weightLookup[trimmedID],
+          temperature: temperatureLookup[trimmedID]
         };
       })
       .filter((d) => d.VO2 >= 0 && d.VO2 <= 80);
@@ -40,7 +57,53 @@ d3.csv("subject-info.csv")
   })
   .catch((error) => console.error("Error loading CSV:", error));
 
+// Add these new functions
+function setupSlider(minId, maxId, minVal, maxVal, unit) {
+  d3.select(minId)
+    .attr("min", minVal)
+    .attr("max", maxVal)
+    .attr("value", minVal);
+
+  d3.select(maxId)
+    .attr("min", minVal)
+    .attr("max", maxVal)
+    .attr("value", maxVal);
+
+  d3.select(minId).on("input", updateAllDisplays);
+  d3.select(maxId).on("input", updateAllDisplays);
+
+  updateDisplay(minId, maxId, unit);
+}
+
+function updateAllDisplays() {
+  updateDisplay("#age-min", "#age-max", "years");
+  updateDisplay("#weight-min", "#weight-max", "kg");
+  updateDisplay("#temp-min", "#temp-max", "°C");
+  createHistogram();
+}
+
+function updateDisplay(minId, maxId, unit) {
+  const min = +d3.select(minId).property("value");
+  const max = +d3.select(maxId).property("value");
+  const displayId = `${minId}-display`.replace("#", "#value-");
+  d3.select(displayId).text(`${min} - ${max} ${unit}`);
+}
+
+// Modify your createHistogram function to include all filters
 function createHistogram() {
+  const minAge = +d3.select("#age-min").property("value");
+  const maxAge = +d3.select("#age-max").property("value");
+  const minWeight = +d3.select("#weight-min").property("value");
+  const maxWeight = +d3.select("#weight-max").property("value");
+  const minTemp = +d3.select("#temp-min").property("value");
+  const maxTemp = +d3.select("#temp-max").property("value");
+
+  const filteredData = data.filter(d => 
+    d.age >= minAge && d.age <= maxAge &&
+    d.weight >= minWeight && d.weight <= maxWeight &&
+    d.temperature >= minTemp && d.temperature <= maxTemp
+  );
+
   d3.select("#chart").selectAll("*").remove();
 
   const width = 960,
@@ -70,8 +133,8 @@ function createHistogram() {
     .value((d) => d.VO2)
     .thresholds(30);
 
-  const binsMale = histogram(data.filter((d) => d.gender === "male"));
-  const binsFemale = histogram(data.filter((d) => d.gender === "female"));
+  const binsMale = histogram(filteredData.filter((d) => d.gender === "male"));
+  const binsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
 
   function updateChart() {
     svg.selectAll(".bar, .axis").remove();
@@ -109,8 +172,8 @@ function createHistogram() {
 
     histogram.domain(x.domain());
 
-    const updatedBinsMale = histogram(data.filter((d) => d.gender === "male"));
-    const updatedBinsFemale = histogram(data.filter((d) => d.gender === "female"));
+    const updatedBinsMale = histogram(filteredData.filter((d) => d.gender === "male"));
+    const updatedBinsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
 
     const xAxis = svg.append("g")
       .attr("class", "axis")
@@ -221,7 +284,24 @@ function createHistogram() {
     toggleFilter("female", this);
   });
 
+  // Add this near your other button handlers
+  d3.select("#bothButton").on("click", function() {
+    selectedGenders.clear();
+    selectedGenders.add("male");
+    selectedGenders.add("female");
+    
+    // Update button states
+    d3.select("#maleButton").classed("active", true);
+    d3.select("#femaleButton").classed("active", true);
+    d3.select(this).classed("active", true);
+     
+    updateChart();
+  });
+
   function toggleFilter(gender, button) {
+    // Reset "both" button state
+    d3.select("#bothButton").classed("active", false);
+    
     if (selectedGenders.has(gender)) {
       selectedGenders.delete(gender);
       button.classList.remove("active");
