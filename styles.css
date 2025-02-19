@@ -144,3 +144,8 @@ svg {
     width: 100%;       
     height: auto;       
 }
+
+a {
+    font: arial;
+    font-size: 30px;
+}
