@@ -94,3 +94,39 @@ svg {
     stroke: #ddd;
     stroke-opacity: 0.7;
   }
+
+.stats-container {
+margin: 20px auto;
+padding: 15px;
+background-color: #f8f9fa;
+border-radius: 8px;
+max-width: 500px;
+line-height: 1.6;
+box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#brush-stats {
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    max-width: 600px;
+    line-height: 1.8;
+    font-size: 16px;
+    text-align: center;
+}
+
+.brush .selection {
+    fill: #69b3a2;
+    fill-opacity: 0.2;
+    stroke: #4a8c74;
+    stroke-width: 1px;
+}
+
+.brush .handle {
+    fill: #555;
+}
+
+.brush .overlay {
+    cursor: crosshair;
+}

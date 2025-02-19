@@ -137,7 +137,8 @@ function createHistogram() {
   const binsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
 
   function updateChart() {
-    svg.selectAll(".bar, .axis").remove();
+    // Remove old elements including brush
+    svg.selectAll(".bar, .axis, .brush").remove();
 
     let maxY = 0;
     let minX = Infinity;
@@ -175,10 +176,16 @@ function createHistogram() {
     const updatedBinsMale = histogram(filteredData.filter((d) => d.gender === "male"));
     const updatedBinsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
 
+    // Draw axes first
     const xAxis = svg.append("g")
       .attr("class", "axis")
       .attr("transform", `translate(0,${height - margin.bottom})`);
 
+    const yAxis = svg.append("g")
+      .attr("class", "axis")
+      .attr("transform", `translate(${margin.left},0)`);
+
+    // Update axes with transitions
     xAxis.transition()
       .duration(500)
       .call(d3.axisBottom(x))
@@ -191,10 +198,6 @@ function createHistogram() {
       .style("font-size", "16px")
       .style("font-weight", "bold")
       .text("VO2 Levels (ml/kg/min)");
-
-    const yAxis = svg.append("g")
-      .attr("class", "axis")
-      .attr("transform", `translate(${margin.left},0)`);
 
     yAxis.transition()
       .duration(500)
@@ -210,6 +213,46 @@ function createHistogram() {
       .style("font-weight", "bold")
       .text("Frequency / Count");
 
+    // Add brush after axes but before bars
+    const brush = d3.brushX()
+      .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
+      .on("end", brushed);
+
+    svg.append("g")
+      .attr("class", "brush")
+      .call(brush);
+
+    function brushed(event) {
+      if (!event.selection) {
+        d3.select("#brush-stats").html("");
+        return;
+      }
+
+      const [x0, x1] = event.selection.map(x.invert);
+      const selectedData = filteredData.filter(d => d.VO2 >= x0 && d.VO2 <= x1);
+
+      if (selectedData.length === 0) {
+        d3.select("#brush-stats").html("");
+        return;
+      }
+
+      const maleCount = selectedData.filter(d => d.gender === "male").length;
+      const femaleCount = selectedData.filter(d => d.gender === "female").length;
+      const avgVO2 = d3.mean(selectedData, d => d.VO2);
+
+      d3.select("#brush-stats")
+        .style("text-align", "center")
+        .style("font-size", "16px")
+        .html(`
+          <strong>Selected Range: ${x0.toFixed(1)} - ${x1.toFixed(1)} ml/kg/min</strong><br>
+          <strong>Total Count: ${(maleCount + femaleCount).toLocaleString()}</strong><br>
+          <strong>Average VO2: ${avgVO2.toFixed(2)} ml/kg/min</strong><br>
+          <strong>Male Count: ${maleCount.toLocaleString()}</strong><br>
+          <strong>Female Count: ${femaleCount.toLocaleString()}</strong>
+        `);
+    }
+
+    // Draw bars after brush
     if (selectedGenders.has("male")) {
       svg.append("g")
         .selectAll("rect")
@@ -314,3 +357,4 @@ function createHistogram() {
 
   updateChart();
 }
+
