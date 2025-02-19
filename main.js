@@ -107,7 +107,7 @@ function createHistogram() {
   d3.select("#chart").selectAll("*").remove();
 
   const width = 1200,  
-  height = 700,    
+  height = 650,    
   margin = { 
       top: 30,     
       right: 30,   

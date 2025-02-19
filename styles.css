@@ -133,14 +133,14 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
 #chart {
     width: 100%;
-    max-width: 1200px;  /* Match the SVG width */
-    margin: 0 auto;     /* Center the chart */
-    overflow: visible;   /* Allow axis labels to overflow */
+    max-width: 1200px;  
+    margin: 0 auto;     
+    overflow: visible;  
 }
 
 svg {
     display: block;
     margin: auto;
-    width: 100%;        /* Make SVG responsive */
-    height: auto;       /* Maintain aspect ratio */
+    width: 100%;       
+    height: auto;       
 }
