@@ -106,9 +106,14 @@ function createHistogram() {
 
   d3.select("#chart").selectAll("*").remove();
 
-  const width = 960,
-    height = 500,
-    margin = { top: 20, right: 20, bottom: 60, left: 60 };
+  const width = 1200,  
+  height = 700,    
+  margin = { 
+      top: 30,     
+      right: 30,   
+      bottom: 80,  
+      left: 80 
+  };
 
   let tooltip = d3.select("body").select(".tooltip");
   if (tooltip.empty()) {
