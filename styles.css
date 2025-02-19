@@ -149,7 +149,6 @@ svg {
     margin: 10px 0;
 }
 
-/* Add these new styles to your existing CSS file */
 #filters {
     display: flex;
     flex-direction: column;
