@@ -106,9 +106,14 @@ function createHistogram() {
 
   d3.select("#chart").selectAll("*").remove();
 
-  const width = 960,
-    height = 500,
-    margin = { top: 20, right: 20, bottom: 60, left: 60 };
+  const width = 1200,  
+  height = 650,    
+  margin = { 
+      top: 30,     
+      right: 30,   
+      bottom: 80,  
+      left: 80 
+  };
 
   let tooltip = d3.select("body").select(".tooltip");
   if (tooltip.empty()) {
@@ -129,6 +134,38 @@ function createHistogram() {
     .attr("width", width)
     .attr("height", height);
 
+    const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${width - margin.right - 100}, ${margin.top})`);
+
+  legend.append("rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", "steelblue");
+
+  legend.append("text")
+    .attr("x", 24)
+    .attr("y", 9)
+    .attr("dy", "0.35em")
+    .style("text-anchor", "start")
+    .text("Male");
+
+  legend.append("rect")
+    .attr("x", 0)
+    .attr("y", 24)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", "lightcoral");
+
+  legend.append("text")
+    .attr("x", 24)
+    .attr("y", 33)
+    .attr("dy", "0.35em")
+    .style("text-anchor", "start")
+    .text("Female");
+
   const histogram = d3.bin()
     .value((d) => d.VO2)
     .thresholds(30);
@@ -137,164 +174,255 @@ function createHistogram() {
   const binsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
 
   function updateChart() {
-    svg.selectAll(".bar, .axis").remove();
+  svg.selectAll(".bar, .axis").remove();
 
-    let maxY = 0;
-    let minX = Infinity;
-    let maxX = -Infinity;
+  const filteredData = data.filter(d => 
+    d.age >= minAge && d.age <= maxAge &&
+    d.weight >= minWeight && d.weight <= maxWeight &&
+    d.temperature >= minTemp && d.temperature <= maxTemp
+  );
 
-    if (selectedGenders.has("male")) {
-      maxY = Math.max(maxY, d3.max(binsMale, (d) => d.length));
-      minX = Math.min(minX, d3.min(binsMale, (d) => d.x0));
-      maxX = Math.max(maxX, d3.max(binsMale, (d) => d.x1));
-    }
-    if (selectedGenders.has("female")) {
-      maxY = Math.max(maxY, d3.max(binsFemale, (d) => d.length));
-      minX = Math.min(minX, d3.min(binsFemale, (d) => d.x0));
-      maxX = Math.max(maxX, d3.max(binsFemale, (d) => d.x1));
-    }
+  const binsMale = histogram(filteredData.filter((d) => d.gender === "male"));
+  const binsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
 
-    if (!selectedGenders.size) {
-      minX = 0;
-      maxX = 60;
-      maxY = 1;
-    }
+  let maxY = 0;
+  let minX = Infinity;
+  let maxX = -Infinity;
 
-    const x = d3.scaleLinear()
-      .domain([minX, maxX])
-      .nice()
-      .range([margin.left, width - margin.right]);
-
-    const y = d3.scaleLinear()
-      .domain([0, maxY])
-      .nice()
-      .range([height - margin.bottom, margin.top]);
-
-    histogram.domain(x.domain());
-
-    const updatedBinsMale = histogram(filteredData.filter((d) => d.gender === "male"));
-    const updatedBinsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
-
-    const xAxis = svg.append("g")
-      .attr("class", "axis")
-      .attr("transform", `translate(0,${height - margin.bottom})`);
-
-    xAxis.transition()
-      .duration(500)
-      .call(d3.axisBottom(x))
-      .selection()
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", 40)
-      .attr("fill", "#000")
-      .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "bold")
-      .text("VO2 Levels (ml/kg/min)");
-
-    const yAxis = svg.append("g")
-      .attr("class", "axis")
-      .attr("transform", `translate(${margin.left},0)`);
-
-    yAxis.transition()
-      .duration(500)
-      .call(d3.axisLeft(y))
-      .selection()
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -height / 2)
-      .attr("y", -45)
-      .attr("fill", "#000")
-      .attr("text-anchor", "middle")
-      .style("font-size", "16px")
-      .style("font-weight", "bold")
-      .text("Frequency / Count");
-
-    if (selectedGenders.has("male")) {
-      svg.append("g")
-        .selectAll("rect")
-        .data(updatedBinsMale)
-        .join("rect")
-        .attr("class", "bar bar-male")
-        .attr("x", (d) => x(d.x0) + 1)
-        .attr("width", (d) => Math.max(0, x(d.x1) - x(d.x0) - 1))
-        .attr("y", height - margin.bottom)
-        .attr("height", 0)
-        .transition()
-        .duration(500)
-        .attr("y", (d) => y(d.length))
-        .attr("height", (d) => y(0) - y(d.length));
-
-      // Add hover effects for male bars
-      svg.selectAll(".bar-male")
-        .on("mouseover", function (event, d) {
-          tooltip.transition().duration(200).style("opacity", 0.9);
-          tooltip.html(`
-            <strong>Male</strong><br/>
-            Range: ${d.x0.toFixed(1)} - ${d.x1.toFixed(1)}<br/>
-            Count: ${d.length.toLocaleString()}
-          `)
-          .style("left", event.pageX + 10 + "px")
-          .style("top", event.pageY - 28 + "px");
-        })
-        .on("mouseout", function () {
-          tooltip.transition().duration(500).style("opacity", 0);
-        });
-    }
-
-    if (selectedGenders.has("female")) {
-      svg.append("g")
-        .selectAll("rect")
-        .data(updatedBinsFemale)
-        .join("rect")
-        .attr("class", "bar bar-female")
-        .attr("x", (d) => x(d.x0) + 1)
-        .attr("width", (d) => Math.max(0, x(d.x1) - x(d.x0) - 1))
-        .attr("y", height - margin.bottom)
-        .attr("height", 0)
-        .transition()
-        .duration(500)
-        .attr("y", (d) => y(d.length))
-        .attr("height", (d) => y(0) - y(d.length));
-
-      // Add hover effects for female bars
-      svg.selectAll(".bar-female")
-        .on("mouseover", function (event, d) {
-          tooltip.transition().duration(200).style("opacity", 0.9);
-          tooltip.html(`
-            <strong>Female</strong><br/>
-            Range: ${d.x0.toFixed(1)} - ${d.x1.toFixed(1)}<br/>
-            Count: ${d.length.toLocaleString()}
-          `)
-          .style("left", event.pageX + 10 + "px")
-          .style("top", event.pageY - 28 + "px");
-        })
-        .on("mouseout", function () {
-          tooltip.transition().duration(500).style("opacity", 0);
-        });
-    }
+  if (selectedGenders.has("male")) {
+    maxY = Math.max(maxY, d3.max(binsMale, (d) => d.length));
+    minX = Math.min(minX, d3.min(binsMale, (d) => d.x0));
+    maxX = Math.max(maxX, d3.max(binsMale, (d) => d.x1));
+  }
+  if (selectedGenders.has("female")) {
+    maxY = Math.max(maxY, d3.max(binsFemale, (d) => d.length));
+    minX = Math.min(minX, d3.min(binsFemale, (d) => d.x0));
+    maxX = Math.max(maxX, d3.max(binsFemale, (d) => d.x1));
   }
 
+  if (!selectedGenders.size) {
+    minX = 0;
+    maxX = 60;
+    maxY = 1;
+  }
+
+  const x = d3.scaleLinear()
+    .domain([minX, maxX])
+    .nice()
+    .range([margin.left, width - margin.right]);
+
+  const y = d3.scaleLinear()
+    .domain([0, maxY])
+    .nice()
+    .range([height - margin.bottom, margin.top]);
+
+  histogram.domain(x.domain());
+
+  const updatedBinsMale = histogram(filteredData.filter((d) => d.gender === "male"));
+  const updatedBinsFemale = histogram(filteredData.filter((d) => d.gender === "female"));
+
+  const xAxis = svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(0,${height - margin.bottom})`);
+
+  xAxis.transition()
+    .duration(500)
+    .call(d3.axisBottom(x))
+    .selection()
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", 40)
+    .attr("fill", "#000")
+    .attr("text-anchor", "middle")
+    .style("font-size", "16px")
+    .style("font-weight", "bold")
+    .text("VO2 Levels (ml/kg/min)");
+
+  const yAxis = svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(${margin.left},0)`);
+
+  yAxis.transition()
+    .duration(500)
+    .call(d3.axisLeft(y))
+    .selection()
+    .append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -45)
+    .attr("fill", "#000")
+    .attr("text-anchor", "middle")
+    .style("font-size", "16px")
+    .style("font-weight", "bold")
+    .text("Frequency / Count");
+const brush = d3.brushX()
+    .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
+    .on("start brush end", brushed);
+
+  svg.append("g")
+    .attr("class", "brush")
+    .call(brush);
+
+  function brushed(event) {
+    if (!event.selection) {
+      d3.select("#brush-stats").html("");
+      return;
+    }
+    svg.select(".brush").call(brush.move, null);
+
+    const [x0, x1] = event.selection.map(x.invert);
+    const selectedData = filteredData.filter(d => d.VO2 >= x0 && d.VO2 <= x1);
+
+    if (selectedData.length === 0) {
+      d3.select("#brush-stats").html("");
+      return;
+    }
+    const maleCount = selectedData.filter(d => d.gender === "male").length;
+    const femaleCount = selectedData.filter(d => d.gender === "female").length;
+    const avgVO2 = d3.mean(selectedData, d => d.VO2);
+
+    d3.select("#brush-stats")
+      .style("text-align", "center")
+      .style("font-size", "16px")
+      .html(`
+        <strong>Selected Range: ${x0.toFixed(1)} - ${x1.toFixed(1)} ml/kg/min</strong><br>
+        <strong>Total Count: ${(maleCount + femaleCount).toLocaleString()}</strong><br>
+        <strong>Average VO2: ${avgVO2.toFixed(2)} ml/kg/min</strong><br>
+        <strong>Male Count: ${maleCount.toLocaleString()}</strong><br>
+        <strong>Female Count: ${femaleCount.toLocaleString()}</strong>
+      `);
+  }
+
+  if (selectedGenders.has("male")) {
+    svg.append("g")
+      .selectAll("rect")
+      .data(updatedBinsMale)
+      .join("rect")
+      .attr("class", "bar bar-male")
+      .attr("x", (d) => x(d.x0) + 1)
+      .attr("width", (d) => Math.max(0, x(d.x1) - x(d.x0) - 1))
+      .attr("y", height - margin.bottom)
+      .attr("height", 0)
+      .transition()
+      .duration(500)
+      .attr("y", (d) => y(d.length))
+      .attr("height", (d) => y(0) - y(d.length));
+
+    // Add hover effects for male bars
+    svg.selectAll(".bar-male")
+      .on("mouseover", function (event, d) {
+        tooltip.transition().duration(200).style("opacity", 0.9);
+        tooltip.html(`
+          <strong>Male</strong><br/>
+          Range: ${d.x0.toFixed(1)} - ${d.x1.toFixed(1)}<br/>
+          Count: ${d.length.toLocaleString()}
+        `)
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY - 28 + "px");
+      })
+      .on("mouseout", function () {
+        tooltip.transition().duration(500).style("opacity", 0);
+      });
+  }
+
+  if (selectedGenders.has("female")) {
+    svg.append("g")
+      .selectAll("rect")
+      .data(updatedBinsFemale)
+      .join("rect")
+      .attr("class", "bar bar-female")
+      .attr("x", (d) => x(d.x0) + 1)
+      .attr("width", (d) => Math.max(0, x(d.x1) - x(d.x0) - 1))
+      .attr("y", height - margin.bottom)
+      .attr("height", 0)
+      .transition()
+      .duration(500)
+      .attr("y", (d) => y(d.length))
+      .attr("height", (d) => y(0) - y(d.length));
+
+    // Add hover effects for female bars
+    svg.selectAll(".bar-female")
+      .on("mouseover", function (event, d) {
+        tooltip.transition().duration(200).style("opacity", 0.9);
+        tooltip.html(`
+          <strong>Female</strong><br/>
+          Range: ${d.x0.toFixed(1)} - ${d.x1.toFixed(1)}<br/>
+          Count: ${d.length.toLocaleString()}
+        `)
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY - 28 + "px");
+      })
+      .on("mouseout", function () {
+        tooltip.transition().duration(500).style("opacity", 0);
+      });
+  }
+}
+
+
+function updateChartWithBrushedData(brushedData) {
+const binsMale = histogram(brushedData.filter((d) => d.gender === "male"));
+const binsFemale = histogram(brushedData.filter((d) => d.gender === "female"));
+
+const y = d3.scaleLinear()
+  .domain([0, d3.max([...binsMale, ...binsFemale], d => d.length)])
+  .nice()
+  .range([height - margin.bottom, margin.top]);
+
+yAxis.transition()
+  .duration(500)
+  .call(d3.axisLeft(y));
+
+svg.selectAll(".bar-male")
+  .data(binsMale)
+  .join("rect")
+  .attr("class", "bar bar-male")
+  .attr("x", (d) => x(d.x0) + 1)
+  .attr("width", (d) => Math.max(0, x(d.x1) - x(d.x0) - 1))
+  .attr("y", height - margin.bottom)
+  .attr("height", 0)
+  .transition()
+  .duration(500)
+  .attr("y", (d) => y(d.length))
+  .attr("height", (d) => y(0) - y(d.length));
+
+svg.selectAll(".bar-female")
+  .data(binsFemale)
+  .join("rect")
+  .attr("class", "bar bar-female")
+  .attr("x", (d) => x(d.x0) + 1)
+  .attr("width", (d) => Math.max(0, x(d.x1) - x(d.x0) - 1))
+  .attr("y", height - margin.bottom)
+  .attr("height", 0)
+  .transition()
+  .duration(500)
+  .attr("y", (d) => y(d.length))
+  .attr("height", (d) => y(0) - y(d.length));
+}
+
   // Button event handlers
-  d3.select("#maleButton").on("click", function () {
+d3.select("#maleButton").on("click", function () {
     toggleFilter("male", this);
   });
-
+  
   d3.select("#femaleButton").on("click", function () {
     toggleFilter("female", this);
   });
-
-  // Add this near your other button handlers
-  d3.select("#bothButton").on("click", function() {
-    selectedGenders.clear();
-    selectedGenders.add("male");
-    selectedGenders.add("female");
-    
-    // Update button states
-    d3.select("#maleButton").classed("active", true);
-    d3.select("#femaleButton").classed("active", true);
-    d3.select(this).classed("active", true);
-     
+  
+   // Add this near your other button handlers
+   d3.select("#bothButton").on("click", function() {
+    if (d3.select(this).classed("active")) {
+      selectedGenders.clear();
+      d3.select("#maleButton").classed("active", false);
+      d3.select("#femaleButton").classed("active", false);
+      d3.select(this).classed("active", false);
+    } else {
+      selectedGenders.clear();
+      selectedGenders.add("male");
+      selectedGenders.add("female");
+      d3.select("#maleButton").classed("active", true);
+      d3.select("#femaleButton").classed("active", true);
+      d3.select(this).classed("active", true);
+    }
     updateChart();
   });
 
@@ -304,13 +432,31 @@ function createHistogram() {
     
     if (selectedGenders.has(gender)) {
       selectedGenders.delete(gender);
-      button.classList.remove("active");
+      d3.select(button).classed("active", false);
     } else {
       selectedGenders.add(gender);
-      button.classList.add("active");
+      d3.select(button).classed("active", true);
     }
+
+    // If no gender is selected, default to both
+    if (selectedGenders.size === 0) {
+      selectedGenders.add("male");
+      selectedGenders.add("female");
+      d3.select("#maleButton").classed("active", true);
+      d3.select("#femaleButton").classed("active", true);
+      d3.select("#bothButton").classed("active", true);
+    }
+
     updateChart();
   }
 
   updateChart();
 }
+
+// Initial button states
+d3.select("#maleButton").classed("active", true);
+d3.select("#femaleButton").classed("active", true);
+d3.select("#bothButton").classed("active", true);
+
+updateChart();
+
