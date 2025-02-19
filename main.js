@@ -134,6 +134,42 @@ function createHistogram() {
     .attr("width", width)
     .attr("height", height);
 
+    const legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("transform", `translate(${width - margin.right - 100}, ${margin.top})`);
+
+
+  legend.append("rect")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", "steelblue");
+
+
+  legend.append("text")
+    .attr("x", 24)
+    .attr("y", 9)
+    .attr("dy", "0.35em")
+    .style("text-anchor", "start")
+    .text("Male");
+
+
+  legend.append("rect")
+    .attr("x", 0)
+    .attr("y", 24)
+    .attr("width", 18)
+    .attr("height", 18)
+    .attr("fill", "lightcoral");
+
+
+  legend.append("text")
+    .attr("x", 24)
+    .attr("y", 33)
+    .attr("dy", "0.35em")
+    .style("text-anchor", "start")
+    .text("Female");
+
   const histogram = d3.bin()
     .value((d) => d.VO2)
     .thresholds(30);
