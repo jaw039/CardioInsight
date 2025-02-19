@@ -22,6 +22,12 @@ body {
     color: white;
 }
 
+/* Add styles for the both button */
+#bothButton.active {
+    background-color: #28a745;
+    color: white;
+}
+
 svg {
     display: block;
     margin: auto;
@@ -29,10 +35,12 @@ svg {
 
 .bar-male {
     fill: steelblue;
+    opacity: 0.6;
 }
 
 .bar-female {
     fill: lightcoral;
+    opacity: 0.6;
 }
 
 /* tooltip feature  */
@@ -45,31 +53,44 @@ svg {
     border-radius: 4px;
     pointer-events: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
-  .bar-male, .bar-female {
+}
+
+.bar-male, .bar-female {
     opacity: 0.7;
     transition: opacity 0.2s;
-  }
-  
-  .bar-male:hover, .bar-female:hover {
+}
+
+.bar-male:hover, .bar-female:hover {
     opacity: 1;
-  }
-  
-  .brush .selection {
+}
+
+/* Add styles for when both genders are shown */
+.bar-both-male {
+    fill: steelblue;
+    opacity: 0.7;
+}
+
+.bar-both-female {
+    fill: lightcoral;
+    opacity: 0.7;
+}
+
+/* Add styles for when bars are shown together */
+.bar-male.both, .bar-female.both {
+    opacity: 0.7;
+}
+
+.brush .selection {
     fill: #69b3a2;
     fill-opacity: 0.2;
     stroke: #4a8c74;
-  }
-  
-  .legend {
+}
+
+.legend {
     font-size: 12px;
-  }
-  
-  .grid line {
+}
+
+.grid line {
     stroke: #ddd;
     stroke-opacity: 0.7;
   }
-
-  /* Brush Feature */
-  
