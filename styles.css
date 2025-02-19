@@ -189,3 +189,15 @@ svg {
 .slider:hover::-moz-range-thumb {
     background: #0056b3;
 }
+
+/* Brush Feature */
+.brush .selection {
+    fill: #69b3a2;
+    fill-opacity: 0.2;
+    stroke: #4a8c74;
+}
+
+.brush-stats {
+    margin: 20px auto;
+    padding: 15px;
+}
